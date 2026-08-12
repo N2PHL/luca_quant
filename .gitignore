@@ -1,0 +1,16 @@
+# Môi trường ảo (Tuyệt đối không đẩy lên)
+venv/
+quant_env/
+.env
+
+# Bảo mật (Chứa API Keys)
+.streamlit/secrets.toml
+
+# File rác của Python và Mac
+__pycache__/
+*.pyc
+.DS_Store
+
+# File cache của hệ thống
+.pytest_cache/
+.ipynb_checkpoints/
