@@ -1,0 +1,25 @@
+# --- Bắt buộc ---
+streamlit>=1.40.0
+pandas>=2.0.0,<3.0.0
+numpy>=1.24.0
+scipy>=1.11.0
+scikit-learn>=1.3.0
+plotly>=5.18.0
+requests>=2.31.0
+
+# --- Mô hình bổ sung (tuỳ chọn — registry tự bỏ qua nếu thiếu) ---
+lightgbm>=4.3.0
+catboost>=1.2.5
+xgboost>=2.0.0
+
+# --- Dữ liệu tuỳ chọn ---
+yfinance>=0.2.36
+
+# --- Kiểm định ---
+pytest>=8.0.0
+
+# --- Deep Learning: cài riêng, KHÔNG bật trên Streamlit Cloud free tier ---
+# torch>=2.2.0
+# --- Econometric: ARIMA/GARCH ---
+# statsmodels>=0.14.0
+# arch>=6.3.0
