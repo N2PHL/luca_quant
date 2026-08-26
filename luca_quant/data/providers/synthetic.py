@@ -12,6 +12,7 @@ Mục đích (rất quan trọng cho đồ án):
 """
 from __future__ import annotations
 
+import zlib
 from datetime import datetime
 
 import numpy as np
@@ -43,8 +44,28 @@ class SyntheticProvider(DataProvider):
         self.annual_vol = annual_vol
         self.signal_strength = signal_strength
 
+    @staticmethod
+    def _ticker_offset(ticker: str) -> int:
+        """
+        Trộn mã CK vào seed một cách TẤT ĐỊNH.
+
+        Không được dùng `hash(ticker)`: từ Python 3.3 (PEP 456), hash của chuỗi
+        được muối ngẫu nhiên theo từng tiến trình, trừ khi đặt PYTHONHASHSEED.
+        Hệ quả với repo này rất nặng: `SyntheticProvider` là CONTROL EXPERIMENT,
+        và toàn bộ lập luận khoa học dựa trên câu "chạy random walk phải ra
+        AUC ≈ 0.50 và gate REJECT". Nếu mỗi lần khởi động app lại sinh ra một
+        chuỗi giá khác, con số bạn viết trong báo cáo không ai tái lập được —
+        kể cả chính bạn.
+
+        Tệ hơn: với một lần rút thăm may mắn, chuỗi nhiễu thuần vẫn có thể cho
+        Sharpe cao, và người đọc sẽ tưởng hệ thống bị rò rỉ dữ liệu.
+
+        crc32 là tất định qua mọi tiến trình và mọi phiên bản Python.
+        """
+        return zlib.crc32(ticker.upper().encode("utf-8")) % 1000
+
     def _fetch_raw(self, ticker, start, end, resolution="1D") -> pd.DataFrame:
-        rng = np.random.default_rng(self.seed + abs(hash(ticker)) % 1000)
+        rng = np.random.default_rng(self.seed + self._ticker_offset(ticker))
         idx = pd.bdate_range(start=start, end=end)
         n = len(idx)
         if n < 2:
