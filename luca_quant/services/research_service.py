@@ -29,7 +29,7 @@ from luca_quant.experiments.benchmark import BenchmarkEngine
 from luca_quant.experiments.runner import ExperimentRunner
 from luca_quant.explainability.investment_thesis import InvestmentThesisEngine
 from luca_quant.features.pipeline import FeaturePipeline, build_common_matrix
-from luca_quant.labels.registry import make_label
+from luca_quant.labels.registry import available_labels, label_task, make_label
 from luca_quant.risk.overlay import standard_arms
 from luca_quant.validation.leakage import LeakageDetector
 
@@ -79,6 +79,19 @@ class ResearchService:
         run_leakage_check: bool = True,
     ) -> ResearchSession:
         label_kwargs = label_kwargs or {"horizon": 5, "k": 0.0}
+
+        # ExperimentRunner gọi model.fit(X, y.astype(int)) -> pipeline hiện tại
+        # CHỈ hỗ trợ nhãn phân loại. Chặn ngay ở đây với thông báo rõ ràng,
+        # thay vì để astype(int) ép mọi lợi suất về 0 rồi chết ở từng fold với
+        # "data contains only one class" — lỗi đó không truy ngược được về
+        # nguyên nhân thật là chọn sai loại nhãn.
+        if label_task(label_name) != "classification":
+            raise ValueError(
+                f"Nhãn '{label_name}' là nhãn HỒI QUY, pipeline hiện chỉ hỗ trợ "
+                f"phân loại. Chọn một trong: "
+                f"{available_labels('classification')}."
+            )
+
         spec = make_label(label_name, prices, **label_kwargs)
 
         X, y, pipe = build_common_matrix(prices, groups, spec.series)
