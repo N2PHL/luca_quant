@@ -1,9 +1,39 @@
-streamlit>=1.30.0
-pandas>=2.0.0
-numpy>=1.24.0
+# =============================================================
+# L.U.C.A Quant — requirements cho Streamlit Community Cloud
+# Free tier: ~1GB RAM, build timeout. Giữ danh sách này GỌN.
+# =============================================================
+
+# --- Bắt buộc ---
+streamlit>=1.40.0,<2.0.0
+pandas>=2.0.0,<3.0.0
+numpy>=1.24.0,<3.0.0
+scipy>=1.11.0
 scikit-learn>=1.3.0
-lightgbm>=4.3.0
-catboost>=1.2.5
 plotly>=5.18.0
-yfinance>=0.2.36
 requests>=2.31.0
+
+# --- Gradient boosting: chỉ giữ LightGBM ---
+# LightGBM ~5MB, nhẹ nhất trong 3 thư viện boosting.
+# CatBoost (~150MB) và XGBoost (~250MB) đã bị gỡ: cộng lại chúng
+# làm build vượt giới hạn RAM/thời gian của free tier.
+# Registry tự bỏ qua model nếu thiếu thư viện, app KHÔNG sập.
+# Muốn bật lại khi chạy máy local -> bỏ comment 2 dòng dưới:
+lightgbm>=4.3.0
+# catboost>=1.2.5
+# xgboost>=2.0.0
+
+# --- Dữ liệu tuỳ chọn ---
+# yfinance chỉ dùng cho benchmark quốc tế; DNSE là nguồn chính.
+# yfinance>=0.2.36
+
+# --- Kiểm định (chạy local, không cần trên Cloud) ---
+# pytest>=8.0.0
+
+# --- Deep Learning: KHÔNG bật trên Streamlit Cloud free tier ---
+# torch>=2.2.0
+
+# --- Econometric: ARIMA/GARCH ---
+# Nhẹ (~30MB), mở khoá baseline `arima` + `garch_vol`.
+# garch_vol là baseline vol-timing KHÓ VƯỢT — rất đáng có trong bảng.
+statsmodels>=0.14.0
+arch>=6.3.0

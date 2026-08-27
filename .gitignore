@@ -14,3 +14,9 @@ __pycache__/
 # File cache của hệ thống
 .pytest_cache/
 .ipynb_checkpoints/
+# Rác do CatBoost sinh ra khi allow_writing_files=True
+catboost_info/
+
+# Output nghiên cứu
+*.txt.bak
+outputs/
