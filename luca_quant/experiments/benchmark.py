@@ -18,14 +18,27 @@ import numpy as np
 import pandas as pd
 
 from luca_quant.backtest.engine import BacktestEngine
+from luca_quant.config.profiles import release_memory
 from luca_quant.config.settings import Settings
 from luca_quant.evaluation.metrics import MetricsEngine
 from luca_quant.evaluation.statistical_tests import paired_test_vs_benchmark
 from luca_quant.experiments.runner import ExperimentResult, ExperimentRunner
 from luca_quant.models import registry as model_registry
 
-DEFAULT_LINEUP = ["buy_hold", "momentum_rule", "random", "logistic",
-                  "random_forest", "hist_gb", "lightgbm"]
+# Lineup mặc định: MỘT đại diện cho mỗi họ, theo đúng thứ tự thang bậc
+# phức tạp. Đọc bảng từ trên xuống phải trả lời được: "thêm phức tạp có
+# đổi lấy hiệu năng không?" Nếu `lstm` không vượt `momentum_rule` thì toàn
+# bộ phần deep learning của báo cáo là một kết quả ÂM — và đó vẫn là kết
+# quả nghiên cứu hợp lệ, phải báo cáo chứ không được giấu.
+#
+# Không đưa cả 34 mô hình vào mặc định: mỗi mô hình chạy thêm là một lần
+# thử, và số lần thử đi thẳng vào `n_trials` của Deflated Sharpe Ratio.
+# Chạy bừa 34 mô hình rồi báo cáo cái tốt nhất là data snooping.
+DEFAULT_LINEUP = ["buy_hold", "momentum_rule", "random",       # baseline
+                  "logistic", "elasticnet",                     # classical
+                  "arima", "garch_vol",                         # econometric
+                  "random_forest", "hist_gb", "lightgbm",       # ml
+                  "lstm", "gru", "cnn1d", "transformer"]        # deep (nếu có torch)
 
 
 class BenchmarkEngine:
@@ -63,6 +76,11 @@ class BenchmarkEngine:
             except Exception as exc:                       # noqa: BLE001
                 rows.append({"Experiment": name, "Model": name, "error": f"{type(exc).__name__}: {exc}"})
                 continue
+            finally:
+                # Mô hình chuỗi để lại vài chục MB sau mỗi lần chạy. Với lineup
+                # 9-14 mô hình trên hạ tầng 1GB, không dọn là chạm trần ở
+                # khoảng mô hình thứ tám và app bị kill giữa chừng.
+                release_memory()
             results.append(res)
             row = res.summary_row()
             row["Family"] = model_registry.get_spec(name).family

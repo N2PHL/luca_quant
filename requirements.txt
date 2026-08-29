@@ -1,6 +1,9 @@
 # =============================================================
-# L.U.C.A Quant — requirements cho Streamlit Community Cloud
-# Free tier: ~1GB RAM, build timeout. Giữ danh sách này GỌN.
+# L.U.C.A Quant — requirements cho BẢN NỘP TRỰC TUYẾN
+# (profile `coursework`, deploy trên Streamlit Community Cloud)
+#
+# Chỉ 6 kiến trúc đề bài yêu cầu: MLP, CNN, RNN, LSTM, GRU, Transformer.
+# Chạy đầy đủ 34 mô hình ở máy local -> dùng requirements-full.txt
 # =============================================================
 
 # --- Bắt buộc ---
@@ -12,28 +15,24 @@ scikit-learn>=1.3.0
 plotly>=5.18.0
 requests>=2.31.0
 
-# --- Gradient boosting: chỉ giữ LightGBM ---
-# LightGBM ~5MB, nhẹ nhất trong 3 thư viện boosting.
-# CatBoost (~150MB) và XGBoost (~250MB) đã bị gỡ: cộng lại chúng
-# làm build vượt giới hạn RAM/thời gian của free tier.
-# Registry tự bỏ qua model nếu thiếu thư viện, app KHÔNG sập.
-# Muốn bật lại khi chạy máy local -> bỏ comment 2 dòng dưới:
-lightgbm>=4.3.0
-# catboost>=1.2.5
-# xgboost>=2.0.0
+# --- PyTorch: BẢN CPU ---
+# Dòng --extra-index-url PHẢI đứng trước `torch`.
+#
+# Không có nó, pip lấy wheel torch mặc định trên PyPI — wheel đó kéo theo
+# toàn bộ runtime CUDA (~2GB). Streamlit Community Cloud giới hạn khoảng 1GB
+# RAM, nên build sẽ FAIL, không phải chạy chậm. Bản CPU chỉ ~200MB.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.2.0
 
-# --- Dữ liệu tuỳ chọn ---
-# yfinance chỉ dùng cho benchmark quốc tế; DNSE là nguồn chính.
-# yfinance>=0.2.36
-
-# --- Kiểm định (chạy local, không cần trên Cloud) ---
-# pytest>=8.0.0
-
-# --- Deep Learning: KHÔNG bật trên Streamlit Cloud free tier ---
-# torch>=2.2.0
-
-# --- Econometric: ARIMA/GARCH ---
-# Nhẹ (~30MB), mở khoá baseline `arima` + `garch_vol`.
-# garch_vol là baseline vol-timing KHÓ VƯỢT — rất đáng có trong bảng.
-statsmodels>=0.14.0
-arch>=6.3.0
+# =============================================================
+# CỐ Ý KHÔNG CÀI — đây là lý do bản online build được
+# =============================================================
+# lightgbm / catboost / xgboost : profile `coursework` không dùng gradient
+#     boosting. Riêng CatBoost ~150MB và XGBoost ~250MB, cộng vào là hết ngân
+#     sách dành cho torch.
+# statsmodels / arch           : ARIMA và GARCH thuộc họ econometric, không
+#     nằm trong phạm vi đề bài phần này.
+# yfinance                     : DNSE là nguồn dữ liệu chính.
+# pytest                       : chỉ chạy local.
+#
+# Registry tự bỏ mô hình khi thiếu thư viện, app KHÔNG sập.

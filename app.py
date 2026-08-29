@@ -30,7 +30,21 @@ c2.info("**Nguyên tắc 2**\n\nRisk Manager chỉ được GIẢM vị thế. Q
 c3.info("**Nguyên tắc 3**\n\nBáo cáo Sharpe luôn kèm số lần thử và Deflated Sharpe Ratio.")
 
 with st.expander("Kiểm tra môi trường"):
+    from luca_quant.config.profiles import active_profile
     from luca_quant.models import registry as mr
-    st.dataframe(mr.catalogue(), use_container_width=True)
     from luca_quant.features import registry as fr
+
+    _p = active_profile()
+    st.write(f"**Profile đang chạy:** `{_p.name}` — {_p.description}")
+    for _n in _p.notes:
+        st.caption(f"• {_n}")
+
+    _cat = mr.catalogue(all_profiles=True)
+    st.dataframe(_cat, use_container_width=True, hide_index=True)
+    _hidden = _cat.loc[~_cat["in_profile"], "model"].tolist()
+    if _hidden:
+        st.caption(
+            f"{len(_hidden)} mô hình đã đăng ký nhưng bị profile này ẩn đi: "
+            f"{', '.join(_hidden)}. Đổi profile để dùng — xem README."
+        )
     st.write("Nhóm feature khả dụng:", fr.available_groups())

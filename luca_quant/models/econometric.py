@@ -31,10 +31,11 @@ from sklearn.linear_model import LinearRegression
 
 
 def _has(mod: str) -> bool:
+    """Kiểm tra thư viện mà KHÔNG import — xem giải thích ở models/registry.py."""
+    import importlib.util
     try:
-        __import__(mod)
-        return True
-    except ImportError:
+        return importlib.util.find_spec(mod) is not None
+    except (ImportError, ValueError):
         return False
 
 
